@@ -33,6 +33,7 @@ import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.TestResult;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -109,6 +110,18 @@ public class BuildData {
   protected Map<String, String> buildVariables;
   protected Set<String> sensitiveBuildVariables;
   protected TestData testResults = null;
+  //add by kfzx-zhouxq, 20170307
+  protected String location;
+  protected String department;
+  protected String appname;
+  protected String version;
+  protected String subsys;
+  protected String jobsuffix;
+  protected String jobtype;
+  protected String jobenv;
+  protected String msgappname;
+  protected String msgdate;
+  protected String msgtime;
 
   BuildData() {}
 
@@ -163,6 +176,141 @@ public class BuildData {
     }
     for (String key : sensitiveBuildVariables) {
       buildVariables.remove(key);
+    }
+
+    //add by kfzx-zhouxq, 20170307
+    String[] prj = projectName.split("_");
+    if (prj.length >= 4) {
+      //基地
+      if (prj[0].equals("HZ")) {
+        location = "杭州";
+      }
+      else if (prj[0].equals("SH")) {
+        location = "上海";
+      }
+      else if (prj[0].equals("GZ")) {
+        location = "广州";
+      }
+      else if (prj[0].equals("BJ")) {
+        location = "北京";
+      }
+      else if (prj[0].equals("ZH")) {
+        location = "珠海";
+      }
+      else {
+        location = prj[0];
+      }
+      //部门
+      if (prj[1].equals("KF1")) {
+        department = "开发一部";
+      }
+      else if (prj[1].equals("KF2")) {
+        department = "开发二部";
+      }
+      else if (prj[1].equals("KF3")) {
+        department = "开发三部";
+      }
+      else if (prj[1].equals("KF4")) {
+        department = "开发四部";
+      }
+      else if (prj[1].equals("KF5")) {
+        department = "开发五部";
+      }
+      else if (prj[1].equals("CS")) {
+        department = "测试部";
+      }
+      else if (prj[1].equals("YFZC")) {
+        department = "研发支持部";
+      }
+      else {
+        department = prj[1];
+      }
+      //应用简称
+      appname = "F-" + prj[2];
+      //月度版本
+      version = prj[3];
+      if (prj.length >= 5) {
+        //子应用
+        if (prj[4].startsWith("{") && prj[4].endsWith("}")) {
+          subsys = prj[4].substring(1, prj[4].length()-1);
+          jobsuffix = projectName.substring(projectName.indexOf("}") + 2);
+        }
+        else {
+          subsys = "";
+          jobsuffix = projectName.substring(prj[0].length()
+                  + prj[1].length()
+                  + prj[2].length()
+                  + prj[3].length() + 4);
+        }
+        //作业类型
+        if (projectName.toLowerCase().indexOf("_build") > 0) {
+          jobtype = "Build";
+        }
+        else if (projectName.toLowerCase().indexOf("_deploy") > 0) {
+          jobtype = "Deploy";
+        }
+        else if (projectName.toLowerCase().indexOf("_analysis_routine") > 0) {
+         jobtype = "Analysis_ROUTINE";
+        }
+        else if (projectName.toLowerCase().indexOf("_analysis") > 0) {
+          jobtype = "Analysis";
+        }
+        else if (projectName.toLowerCase().indexOf("_plsqlcoverage") > 0) {
+          jobtype = "PLSQLCoverage";
+        }
+        else {
+          jobtype = "";
+        }
+        //作业环境
+        if (projectName.endsWith("_GN")) {
+          jobenv = "功能";
+        }
+        else if (projectName.endsWith("_LC")) {
+          jobenv = "流程";
+        }
+        else if (projectName.endsWith("_YC")) {
+          jobenv = "压测";
+        }
+        else if (projectName.endsWith("_YX")) {
+          jobenv = "移行";
+        }
+        else if (projectName.endsWith("_FB")) {
+          jobenv = "封版";
+        }
+        else {
+          jobenv = "";
+        }
+      }
+      else {
+        subsys = "";
+        jobsuffix = "";
+        jobtype = "";
+        jobenv = "";
+      }
+    }
+    else {
+      location = "";
+      department = "";
+      appname = "";
+      version = "";
+      subsys = "";
+      jobsuffix = "";
+      jobtype = "";
+      jobenv = "";
+    }
+    //日志应用
+    msgappname = appname;
+    try {
+      //日期：yyyyMMdd
+      SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd");
+      msgdate = sdf1.format(DATE_FORMATTER.parse(timestamp));
+      //时间:yyyy-MM-dd HH:mm:ss.SSS
+      SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
+      msgtime = sdf2.format(DATE_FORMATTER.parse(timestamp));
+    } catch (ParseException e) {
+      //e.printStackTrace();
+      msgdate = "";
+      msgtime = "";
     }
   }
 
@@ -320,4 +468,81 @@ public class BuildData {
   public void setTestResults(TestData testResults) {
     this.testResults = testResults;
   }
+
+  //add by kfzx-zhouxq, 20170307
+  public String getLocation() {
+    return location;
+  }
+
+  public String getDepartment() {
+    return department;
+  }
+
+  public String getAppname() {
+    return appname;
+  }
+
+  public String getVersion() {
+    return version;
+  }
+
+  public String getSubsys() {
+    return subsys;
+  }
+
+  public String getJobsuffix() {
+    return jobsuffix;
+  }
+
+  public String getJobtype() {
+    return jobtype;
+  }
+
+  public String getJobenv() {
+    return jobenv;
+  }
+
+  public void setLocation(String location) {
+    this.location = location;
+  }
+
+  public void setDepartment(String department) {
+    this.department = department;
+  }
+
+  public void setAppname(String appname) {
+    this.appname = appname;
+  }
+
+  public void setVersion(String version) {
+    this.version = version;
+  }
+
+  public void setSubsys(String subsys) {
+    this.subsys = subsys;
+  }
+
+  public void setJobsuffix(String jobsuffix) {
+    this.jobsuffix = jobsuffix;
+  }
+
+  public void setJobtype(String jobtype) {
+    this.jobtype = jobtype;
+  }
+
+  public void setJobenv(String jobenv) {
+    this.jobenv = jobenv;
+  }
+
+  public String getMsgappname() { return msgappname; }
+
+  public String getMsgdate() { return msgdate; }
+
+  public String getMsgtime() { return msgtime; }
+
+  public void setMsgappname(String msgappname) { this.msgappname = msgappname; }
+
+  public void setMsgdate(String msgdate) { this.msgdate = msgdate; }
+
+  public void setMsgtime(String msgtime) { this.msgtime = msgtime; }
 }
