@@ -60,7 +60,7 @@ abstract class AbstractLogstashIndexerDao implements LogstashIndexerDao {
   public JSONObject buildPayload(BuildData buildData, String jenkinsUrl, List<String> logLines) {
     JSONObject payload = new JSONObject();
     payload.put("data", buildData.toJson());
-    payload.put("message", logLines);
+    payload.put("message", listToString(logLines));
     payload.put("source", "jenkins");
     payload.put("source_host", jenkinsUrl);
     payload.put("@buildTimestamp", buildData.getTimestamp());
@@ -73,5 +73,16 @@ abstract class AbstractLogstashIndexerDao implements LogstashIndexerDao {
   @Override
   public String getDescription() {
     return this.host + ":" + this.port;
+  }
+
+  //add line break to each line of the log List
+  private String listToString(List<String> lines) {
+    String str = "";
+    if (lines.size() > 0) {
+      for (String line : lines) {
+        str = str + line + System.getProperty("line.separator");
+      }
+    }
+    return str;
   }
 }
